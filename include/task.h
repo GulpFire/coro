@@ -1,6 +1,6 @@
 #pragma once
 
-#include <coro/concepts/promise.h>
+#include <concepts/promise.h>
 
 #include <coroutine>
 #include <exception>
@@ -35,7 +35,7 @@ struct promise_base
             }
         }
 
-        auto await_resume() noexcept -> void
+        void await_resume() noexcept
         {
         
         }
@@ -44,13 +44,13 @@ struct promise_base
     promise_base() noexcept = default;
     ~promise_base() = default;
 
-    auto initial_suspend() { return suspend_always{}; }
+    auto initial_suspend() { return std::suspend_always{}; }
 
-    auto final_suspend() noexcept(true) { return final_awaitanle{}; }
+    auto final_suspend() noexcept(true) { return final_awaitable{}; }
     
-    auto unhandled_exception() -> void { p_exception_ = std::current_exception(); }
+    void unhandled_exception() { p_exception_ = std::current_exception(); }
 
-    auto continuation(std::coroutine_handle<> continuation) noexcept -> void { continuation_ = continuation; }
+    void continuation(std::coroutine_handle<> continuation) noexcept { continuation_ = continuation; }
 
     protected:
         std::coroutine_handle<> continuation_{nullptr};
@@ -68,7 +68,7 @@ struct promise final : public promise_base
 
     auto get_return_object() noexcept -> task_type;
     
-    auto return_value(return_type value) -> void { return_value_ = std::move(move); }
+    void return_value(return_type value) { return_value_ = std::move(value); }
 
     auto result() const& -> const return_type&
     {
@@ -96,7 +96,7 @@ struct promise final : public promise_base
 template <>
 struct promise<void> : public promise_base
 {
-    using task_type = task<void>;
+    using task_type = Task<void>;
     using coroutine_handle = std::coroutine_handle<promise<void>>;
 
     promise() noexcept = default;
@@ -152,7 +152,7 @@ class [[nodiscard]] Task
         {
             if (coroutine_ != nullptr)
             {
-                coroutine_.destory();
+                coroutine_.destroy();
             }
         }
 
@@ -251,7 +251,7 @@ class [[nodiscard]] Task
 namespace detail
 {
 template <typename return_type>
-inline auto promise<return_type>::get_return_object() noexcept -> task<return_type>
+inline auto promise<return_type>::get_return_object() noexcept -> Task<return_type>
 {
     return Task<return_type>{coroutine_handle::from_promise(*this)};
 }

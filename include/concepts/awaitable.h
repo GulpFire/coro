@@ -28,9 +28,9 @@ template <typename type>
 concept awaiter = requires(type t, std::coroutine_handle<> co)
 {
     { t.await_ready() } ->std::same_as<bool>;
-    requires std::same_as<decltype(t.await_suspend(c)), void>
-        || std::same_as<decltype(t.await_suspend(c)), bool>
-        || std::same_as<decltype(t.await_suspend(c)), std::coroutine_handle<>>;
+    requires std::same_as<decltype(t.await_suspend(co)), void>
+        || std::same_as<decltype(t.await_suspend(co)), bool>
+        || std::same_as<decltype(t.await_suspend(co)), std::coroutine_handle<>>;
     { t.await_resume() };
 };
 
@@ -41,12 +41,12 @@ concept awaitable = requires(type t)
 };
 
 template <typename type>
-concept awaiter_void = requires(type t, std::coroutine_handle<>)
+concept awaiter_void = requires(type t, std::coroutine_handle<> co)
 {
     { t.await_ready() } -> std::same_as<bool>;
-    requires std::same_as<decltype(t.await_suspend(c)), void>
-        || std::same_as<decltype(t.await_suspend(c)), bool>
-        || std::same_as<decltype(t.await_suspend(c)), std::coroutine_handle<>>;
+    requires std::same_as<decltype(t.await_suspend(co)), void>
+        || std::same_as<decltype(t.await_suspend(co)), bool>
+        || std::same_as<decltype(t.await_suspend(co)), std::coroutine_handle<>>;
     { t.await_resume() } -> std::same_as<void>;
 };
 
@@ -56,14 +56,14 @@ concept awaitable_void = requires(type t)
     { t.operator co_await() } -> awaiter_void;
 };
 
-template <awaitable awaitable>
+template <awaitable awaitable, typename = void>
 struct awaitable_traits
 {
 
 };
 
 template <awaitable awaitable>
-static auto get_awaiter(awaitable&& vlaue)
+static auto get_awaiter(awaitable&& value)
 {
     return std::forward<awaitable>(value).operator co_await();
 }
