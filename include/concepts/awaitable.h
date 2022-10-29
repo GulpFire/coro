@@ -27,7 +27,7 @@ namespace coro::concepts
 template <typename type>
 concept awaiter = requires(type t, std::coroutine_handle<> co)
 {
-    { t.await_ready() } ->std::same_as<bool>;
+    { t.await_ready() } -> std::same_as<bool>;
     requires std::same_as<decltype(t.await_suspend(co)), void>
         || std::same_as<decltype(t.await_suspend(co)), bool>
         || std::same_as<decltype(t.await_suspend(co)), std::coroutine_handle<>>;

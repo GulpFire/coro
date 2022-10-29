@@ -39,7 +39,7 @@ class ThreadPool
             private:
                 friend class ThreadPool;
                 ThreadPool& thread_pool_;
-                std::coroutine_handle<> awaiting_coroutine{nullptr};
+                std::coroutine_handle<> awaiting_coroutine_{nullptr};
 
                 explicit operation(ThreadPool& tp) noexcept;
         };

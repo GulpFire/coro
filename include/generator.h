@@ -2,12 +2,14 @@
 
 #include <coroutine>
 #include <type_traits>
+#include <exception>
+#include <memory>
 
 namespace coro
 {
 
 template <typename T>
-class generator;
+class Generator;
 
 namespace detail
 {
@@ -22,7 +24,7 @@ class generator_promise
 
         generator_promise() = default;
 
-        generator<T> get_return_object() noexcept;
+        Generator<T> get_return_object() noexcept;
 
         auto initial_suspend() const 
         {
@@ -47,7 +49,7 @@ class generator_promise
             return std::suspend_always{};
         }
 
-        void unhandled_exceptoin()
+        void unhandled_exception()
         {
             exception_ = std::current_exception();
         }
@@ -194,7 +196,7 @@ class Generator
         {
             if (coroutine_)
             {
-                coroutine_.destory();
+                coroutine_.destroy();
             }
         }
 

@@ -19,13 +19,13 @@ void ThreadPool::operation::await_suspend(std::coroutine_handle<> awaiting_corou
 ThreadPool::ThreadPool(options opts)
     : opts_(std::move(opts))
 {
-    threads_.reserve(opts_.thread_count_);
+    threads_.reserve(opts_.thread_count);
 
     for (uint32_t i = 0; i < opts_.thread_count; ++i)
     {
         threads_.emplace_back([this, i](std::stop_token st)
                 {
-                    executor(std::move(st), 1);
+                    executor(std::move(st), i);
                 });
     }
 }
@@ -35,7 +35,7 @@ ThreadPool::~ThreadPool()
     shutdown();
 }
 
-operation ThreadPool::schedule()
+ThreadPool::operation ThreadPool::schedule()
 {
     if (!shutdown_requested_.load(std::memory_order::relaxed))
     {
@@ -46,7 +46,7 @@ operation ThreadPool::schedule()
     throw std::runtime_error("coro::ThreadPool is shutting down, unable to schedule new tasks");
 }
 
-void ThreadPool::resume(std::coroutine_handle<> handle)
+void ThreadPool::resume(std::coroutine_handle<> handle) noexcept
 {
     if (handle == nullptr)
     {
@@ -59,14 +59,14 @@ void ThreadPool::resume(std::coroutine_handle<> handle)
 
 void ThreadPool::shutdown() noexcept
 {
-    if (shutdown_requested.exchange(true, std::memory_order::acq_rel) == false)
+    if (shutdown_requested_.exchange(true, std::memory_order::acq_rel) == false)
     {
-        for (auto& thread : threads)
+        for (auto& thread : threads_)
         {
             thread.request_stop();
         }
 
-        for (auto& thread : threads)
+        for (auto& thread : threads_)
         {
             if (thread.joinable())
             {
@@ -88,7 +88,7 @@ void ThreadPool::executor(std::stop_token st, std::size_t idx)
         while (true)
         {
             std::unique_lock<std::mutex> lock{wait_mtx_};
-            wait_cv_.wait(lk, st, [this]
+            wait_cv_.wait(lock, st, [this]
                     {
                         return !queue_.empty();
                     });

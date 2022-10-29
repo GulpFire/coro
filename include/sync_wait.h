@@ -15,17 +15,17 @@ class SyncWaitEvent
         SyncWaitEvent(bool initially_set = false);
         SyncWaitEvent(const SyncWaitEvent&) = delete;
         SyncWaitEvent(SyncWaitEvent&&) = delete;
-        SyncWaitEvent& operator=(const SyncWaitEvent&) = delete;
-        SyncWaitEvent& operator=(SyncWaitEvent&) = delete;
+        auto operator=(const SyncWaitEvent&) -> SyncWaitEvent& = delete;
+        auto operator=(SyncWaitEvent&) -> SyncWaitEvent& = delete;
         ~SyncWaitEvent() = default;
 
-        void set noexcept;
-        void reset noexcept;
+        void set() noexcept;
+        void reset() noexcept;
         void wait() noexcept;
 
     private:
-        std::mutex mutex_;
-        std::coroutine_variable cv_:
+        std::mutex mtx_;
+        std::condition_variable cv_;
         bool set_{false};
 };
 
@@ -35,12 +35,12 @@ class sync_wait_task_promise_base
         sync_wait_task_promise_base() noexcept = default;
         virtual ~sync_wait_task_promise_base() = default;
 
-        std::suspend_always initial_suspned() noexcept
+        auto initial_suspend() noexcept -> std::suspend_always
         {
             return {};
         }
 
-        void unhandled_exception() 
+        auto unhandled_exception() -> void
         {
             exception_ = std::current_exception();
         }
@@ -71,7 +71,7 @@ class sync_wait_task_promise : public sync_wait_task_promise_base
 
         auto yield_value(return_type&& value) noexcept
         {
-            return_value_ std::addressof(value);
+            return_value_ = std::addressof(value);
             return final_suspend();
         }
 
@@ -79,17 +79,17 @@ class sync_wait_task_promise : public sync_wait_task_promise_base
         {
             struct completion_notifier
             {
-                bool await_ready() const noexcept
+                auto await_ready() const noexcept
                 {
                     return false;
                 }
 
-                void await_suspend(coroutine_type coroutine) const noexcept
+                auto await_suspend(coroutine_type coroutine) const noexcept
                 {
                     coroutine.promise().event_->set();
                 }
 
-                void await_resume() noexcept
+                auto await_resume() noexcept
                 {
                 
                 }
@@ -98,9 +98,9 @@ class sync_wait_task_promise : public sync_wait_task_promise_base
             return completion_notifier{};
         }
 
-        return_type&& result()
+        auto result() -> return_type&&
         {
-            if (exception)
+            if (exception_)
             {
                 std::rethrow_exception(exception_);
             }
@@ -119,7 +119,7 @@ class sync_wait_task_promise<void> : public sync_wait_task_promise_base
         sync_wait_task_promise() noexcept = default;
         ~sync_wait_task_promise() override = default;
 
-        auto start(sync_wait_event& event)
+        auto start(SyncWaitEvent& event)
         {
             event_ = &event;
             coroutine_type::from_promise(*this).resume();
@@ -150,12 +150,12 @@ class sync_wait_task_promise<void> : public sync_wait_task_promise_base
             return completion_notifier{};
         }
 
-        void return_void() 
+        auto return_void() -> void
         {
         
         }
 
-        void result()
+        auto result() -> void
         {
             if (exception_)
             {
@@ -164,7 +164,7 @@ class sync_wait_task_promise<void> : public sync_wait_task_promise_base
         }
 };
 
-template <typename ReturnType>
+template <typename return_type>
 class SyncWaitTask
 {
     public:
@@ -185,9 +185,9 @@ class SyncWaitTask
 
         }
 
-        SyncWaitTask& operator=(const SyncWaitTask&) = delete;
+        auto operator=(const SyncWaitTask&) -> SyncWaitTask& = delete;
         
-        SyncWaitTask& operator=(SyncWaitTask&& other)
+        auto operator=(SyncWaitTask&& other) -> SyncWaitTask&
         {
             if (std::addressof(other) != this)
             {
@@ -200,7 +200,7 @@ class SyncWaitTask
         {
             if (coroutine_)
             {
-                coroutine_.destory();
+                coroutine_.destroy();
             }
         }
 

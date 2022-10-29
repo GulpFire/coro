@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(libcoro)
+project(coro)
 
+set(CMAKE_CXX_COMPILER /usr/local/bin/x86_64-pc-linux-gnu-g++)
 set(CARES_STATIC ON CACHE INTERNAL "")
 
 set(LIBCORO_SOURCE_FILES
@@ -31,3 +32,4 @@ target_include_directories(${PROJECT_NAME} PUBLIC include)
 target_link_libraries(${PROJECT_NAME} PUBLIC pthread)
 target_compile_options(${PROJECT_NAME} PUBLIC -fcoroutines -Wall -Wextra -pipe)
 
+add_subdirectory(examples)

@@ -95,4 +95,4 @@ class Event
         auto reverse(awaiter* head) -> awaiter*;
 };  
 
-}
+} // namespace coro

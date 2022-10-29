@@ -7,8 +7,7 @@
 namespace coro::concepts
 {
 template <typename type, typename return_type>
-concept promise = 
-requires(type t)
+concept promise = requires(type t)
 {
     { t.get_return_object() } -> std::convertible_to<std::coroutine_handle<>>;
     { t.initial_suspend() } -> awaiter;

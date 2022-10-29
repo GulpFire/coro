@@ -52,11 +52,11 @@ class when_all_latch
 
         bool try_await(std::coroutine_handle<> awaiting_coroutine) noexcept
         {
-            awaiting_coroutine_ = awaiting_coroutine_;
+            awaiting_coroutine_ = awaiting_coroutine;
             return count_.fetch_sub(1, std::memory_order::acq_rel) > 1;
         }
 
-        void notify_awaitable_compeleted() noexcept
+        void notify_awaitable_completed() noexcept
         {
             if (count_.fetch_sub(1, std::memory_order::acq_rel) == 1)
             {
@@ -197,7 +197,11 @@ class when_all_ready_awaitable<std::tuple<task_types...>>
 
         bool try_await(std::coroutine_handle<> awaiting_coroutine) noexcept
         {
-            std::apply([this](auto&&... tasks) { ((tasks.start(latch_)), ...); }, tasks_);
+            std::apply([this](auto&&... tasks)
+												{ 
+													((tasks.start(latch_)), ...); 
+												}, tasks_);
+
             return latch_.try_await(awaiting_coroutine);
         }
 };
@@ -299,12 +303,12 @@ class when_all_ready_awaitable
 
         bool try_await(std::coroutine_handle<> awaiting_coroutine) noexcept
         {
-            std::apply([this](auto&... tasks)
-                    {
-                        ((tasks.start(latch_), ...));
-                    }, tasks_);
-            return latch_.try_await(awaiting_coroutine);
-        }
+        	for (auto& task : tasks_)
+					{
+						task.start(latch_);
+					}
+					return latch_.try_await(awaiting_coroutine);
+				}
 };
 
 template <typename return_type>
@@ -318,7 +322,7 @@ class when_all_task_promise
         
         } 
 
-        auto get_return_object noexcept 
+        auto get_return_object() noexcept 
         { 
             return coroutine_handle_type::from_promise(*this); 
         }
@@ -330,7 +334,7 @@ class when_all_task_promise
 
         auto final_suspend() noexcept
         {
-            struct completion_notifier
+            struct compeletion_notifier
             {
                 bool await_ready() const noexcept
                 {
@@ -347,7 +351,8 @@ class when_all_task_promise
             
                 }
             };
-            return completion_notifer{};
+            
+						return compeletion_notifier{};
         }
 
         void unhandled_exception() noexcept
@@ -376,15 +381,6 @@ class when_all_task_promise
             return *return_value_;
         }
 
-        return_type&& return_value()
-        {
-            if (p_exception)
-            {
-                std::rethrow_exception(p_exception_);
-            }
-            return std::forward(*return_value_);
-        }
-
     private:
         when_all_latch* latch_{nullptr};
         std::exception_ptr p_exception_;
@@ -394,6 +390,7 @@ class when_all_task_promise
 template <>
 class when_all_task_promise<void>
 {
+	public:
     using coroutine_handle_type = std::coroutine_handle<when_all_task_promise<void>>;
 
     when_all_task_promise() noexcept
@@ -413,7 +410,7 @@ class when_all_task_promise<void>
 
     auto final_suspend() noexcept
     {
-        struct compelition_notifier
+        struct completion_notifier
         {
             bool await_ready() const noexcept
             {
@@ -555,7 +552,7 @@ static auto make_when_all_task(awaitable a) -> when_all_task<return_type> __attr
 template <concepts::awaitable awaitable, typename return_type>
 static auto make_when_all_task(awaitable a) -> when_all_task<return_type>
 {
-    if constexpr (std::is_Void_v<return_type>)
+    if constexpr (std::is_void_v<return_type>)
     {
         co_await static_cast<awaitable&&>(a);
         co_return;
@@ -572,8 +569,8 @@ template <concepts::awaitable... awaitable_type>
 [[nodiscard]] auto when_all(awaitable_type... awaitables)
 {
     return detail::when_all_ready_awaitable<std::tuple<
-        detail::when_all_task<typename concepts::awaitable_traits<awaitables_type>::awaiter_return_type>...>>(
-                std::make_tuple(detial::make_when_all_task(std::move(awaitables))...));
+        detail::when_all_task<typename concepts::awaitable_traits<awaitable_type>::awaiter_return_type>...>>(
+                std::make_tuple(detail::make_when_all_task(std::move(awaitables))...));
 }
 
 template <

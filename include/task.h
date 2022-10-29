@@ -35,7 +35,7 @@ struct promise_base
             }
         }
 
-        void await_resume() noexcept
+        auto await_resume() noexcept -> void
         {
         
         }
@@ -48,9 +48,9 @@ struct promise_base
 
     auto final_suspend() noexcept(true) { return final_awaitable{}; }
     
-    void unhandled_exception() { p_exception_ = std::current_exception(); }
+    auto unhandled_exception() -> void { p_exception_ = std::current_exception(); }
 
-    void continuation(std::coroutine_handle<> continuation) noexcept { continuation_ = continuation; }
+    auto continuation(std::coroutine_handle<> continuation) noexcept -> void { continuation_ = continuation; }
 
     protected:
         std::coroutine_handle<> continuation_{nullptr};
@@ -68,7 +68,7 @@ struct promise final : public promise_base
 
     auto get_return_object() noexcept -> task_type;
     
-    void return_value(return_type value) { return_value_ = std::move(value); }
+    auto return_value(return_type value) -> void { return_value_ = std::move(value); }
 
     auto result() const& -> const return_type&
     {
@@ -183,11 +183,11 @@ class [[nodiscard]] Task
             return !coroutine_.done();
         }
 
-        auto destory() -> bool
+        auto destroy() -> bool
         {
             if (coroutine_ != nullptr)
             {
-                coroutine_.destory();
+                coroutine_.destroy();
                 coroutine_ = nullptr;
                 return true;
             }
