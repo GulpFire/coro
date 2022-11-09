@@ -1,0 +1,1 @@
+/usr/bin/c++ -rdynamic CMakeFiles/coro_event.dir/coro_event.cc.o -o coro_event  ../libcoro.a -lpthread 

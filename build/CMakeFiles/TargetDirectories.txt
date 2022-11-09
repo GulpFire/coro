@@ -1,0 +1,9 @@
+/home/sy/Projects/coro/build/CMakeFiles/coro.dir
+/home/sy/Projects/coro/build/CMakeFiles/edit_cache.dir
+/home/sy/Projects/coro/build/CMakeFiles/rebuild_cache.dir
+/home/sy/Projects/coro/build/examples/CMakeFiles/coro_task.dir
+/home/sy/Projects/coro/build/examples/CMakeFiles/coro_event.dir
+/home/sy/Projects/coro/build/examples/CMakeFiles/coro_generator.dir
+/home/sy/Projects/coro/build/examples/CMakeFiles/coro_thread_pool.dir
+/home/sy/Projects/coro/build/examples/CMakeFiles/edit_cache.dir
+/home/sy/Projects/coro/build/examples/CMakeFiles/rebuild_cache.dir

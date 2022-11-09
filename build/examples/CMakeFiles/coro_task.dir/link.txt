@@ -1,0 +1,1 @@
+/usr/bin/c++ -rdynamic CMakeFiles/coro_task.dir/coro_task.cc.o -o coro_task  ../libcoro.a -lpthread 

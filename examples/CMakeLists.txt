@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(examples)
 
-set(CMAKE_CXX_COMPILER /usr/local/bin/x86_64-pc-linux-gnu-g++)
 
 add_executable(coro_task coro_task.cc)
 target_compile_features(coro_task PUBLIC cxx_std_20)

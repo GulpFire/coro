@@ -1,0 +1,30 @@
+#pragma once
+
+#include <cstdint>
+#include <errno.h>
+
+namespace coro::net
+{
+enum class SendStatus : int64_t
+{
+    OK = 0,
+    PERMISSION_DENIED = EACCES,
+    TRY_AGAIN = EAGAIN,
+    WOULD_BLOCK = EWOULDBLOCK,
+    ALREADY_IN_PROGRESS = EALREADY,
+    BAD_FILE_DESCRIPTOR = EBADF,
+    CONNECTION_RESET = ECONNRESET,
+    NO_PERR_ADDRESS = EDESTADDRREQ,
+    MEMORY_FAULT = EFAULT,
+    INTERRUPTED = EINTR,
+    IS_CONNECTION = EISCONN,
+    MESSAGE_SIZE = EMSGSIZE,
+    OUTPUT_QUEUE_FULL = ENOBUFS,
+    NO_MEMORY = ENOMEM,
+    NOT_CONNECTED = ENOTCONN,
+    NOT_A_SOCKET = ENOTSOCK,
+    OPERATING_NOT_SUPPORTED = EOPNOTSUPP,
+    PIPE_CLOSED = EPIPE,
+    SSL_ERROR = -3
+};
+} // namespace coro::net
